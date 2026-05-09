@@ -8,22 +8,23 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('stock_transactions', function (Blueprint $table) {
+        Schema::create('stock_transactions', function (Blueprint $table) {
+            $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->enum('type', ['in', 'out']);
             $table->integer('quantity');
             $table->string('note')->nullable();
             $table->timestamp('transaction_date')->useCurrent();
+            $table->enum('status', ['pending', 'confirmed'])->default('pending');
+            $table->foreignId('confirmed_by')->nullable()->constrained('users')->onDelete('set null');
+            $table->timestamp('confirmed_at')->nullable();
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('stock_transactions', function (Blueprint $table) {
-            $table->dropForeign(['product_id']);
-            $table->dropForeign(['user_id']);
-            $table->dropColumn(['product_id', 'user_id', 'type', 'quantity', 'note', 'transaction_date']);
-        });
+        Schema::dropIfExists('stock_transactions');
     }
 };
